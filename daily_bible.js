@@ -1,3 +1,6 @@
+months = ['January', 'February', 'March', 'April', 'May', 'June',
+   'July', 'August', 'September', 'October', 'November', 'December'];
+
 function todays_date() {
    var today = new Date();
    var dd = today.getDate();
@@ -16,13 +19,32 @@ function todays_date() {
    return today;
 }
 
-function day_of_year() {
-   var now = new Date();
+function pretty_date(date) {
+   var dd = date.getDate();
+   var mm = date.getMonth();
+   var yyyy = date.getFullYear();
+
+   return months[mm] + ' ' + dd + ', ' + yyyy;
+}
+
+function day_of_year(date) {
+   var now = new Date(date);
    var start = new Date(now.getFullYear(), 0, 0);
    var diff = now - start;
    var oneDay = 1000 * 60 * 60 * 24;
    var day = Math.floor(diff / oneDay);
    return day;
+}
+
+function date_from_day(year, day){
+  var date = new Date(year, 0); // initialize a date in `year-01-01`
+  return new Date(date.setDate(day)); // add the number of days
+}
+
+function us_to_ietf(date) {
+   var parts = date.split('-');
+
+   return months[parseInt(parts[0]) - 1] + ' ' + parts[1] + ', ' + parts[2];
 }
 
 function get_verses() {
@@ -32,9 +54,13 @@ function get_verses() {
 }
 
 function print_verses(data) {
+
+   var start_day = day_of_year(us_to_ietf(params().start));
+
    $('body').append('<table><tbody>');
    for (var i = 0; i < 365; i++) {
       $('body').append('<tr>');
+      $('body').append('<td>' + pretty_date(date_from_day(2015, i + start_day)) + '</td>');
       $('body').append('<td>' + data[i].old_testament + '</td>');
       $('body').append('<td>' + data[i].new_testament + '</td>');
       $('body').append('<td>' + data[i].psalms_and_proverbs + '</td>');
@@ -52,7 +78,7 @@ function params() {
       var pair = vars[i].split("=");
 
       // Chrome bug appends slash to end of parameter
-      if (pair[1].substr(pair[1].length - 1) === "/") {
+      if (pair[1] && pair[1].substr(pair[1].length - 1) === "/") {
          pair[1] = pair[1].substr(0, pair[1].length - 1);
       }
 
@@ -91,6 +117,8 @@ function go_to_date() {
 
    if (get_cookies().start_date) {
       date = get_cookies().start_date;
+   } else if (params().start) {
+      date = params().start;
    } else {
       date = todays_date();
    }
@@ -105,7 +133,7 @@ $(function() {
 
    $('#start_button').click(function() {
       var no_expire = '; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/';
-      document.cookie = 'start_date=' + todays_date() + no_expire;
+      document.cookie = 'start_date=' + params().start + no_expire;
       return false;
    });
 });
