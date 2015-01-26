@@ -43,12 +43,12 @@ function print_verses(data) {
    $('body').append('</tbody></table>');
 }
 
-function params () {
+function params() {
    var query_string = {};
    var query = window.location.search.substring(1);
    var vars = query.split("&");
 
-   for (var i=0;i<vars.length;i++) {
+   for (var i = 0; i < vars.length; i++) {
       var pair = vars[i].split("=");
 
       // Chrome bug appends slash to end of parameter
@@ -72,8 +72,40 @@ function params () {
    return query_string;
 }
 
-$(function() {
-   window.history.pushState(null, null, "?start=" + todays_date());
+function delete_cookie(name) {
+  document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+}
 
+function get_cookies() {
+   var cookies = {}
+   var cookie_string = document.cookie.split(';');
+   for (var i = 0; i < cookie_string.length; i++) {
+      var pair = cookie_string[i].split('=');
+      cookies[pair[0].replace(/ /g, '')] = pair[1];
+   }
+   return cookies;
+}
+
+function go_to_date() {
+   var date;
+
+   if (get_cookies().start_date) {
+      date = get_cookies().start_date;
+   } else {
+      date = todays_date();
+   }
+
+   window.history.pushState(null, null, "?start=" + date);
+}
+
+$(function() {
+
+   go_to_date();
    get_verses();
+
+   $('#start_button').click(function() {
+      var no_expire = '; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/';
+      document.cookie = 'start_date=' + todays_date() + no_expire;
+      return false;
+   });
 });
