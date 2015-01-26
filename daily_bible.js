@@ -57,16 +57,26 @@ function print_verses(data) {
 
    var start_day = day_of_year(us_to_ietf(params().start));
 
-   $('body').append('<table><tbody>');
+   var html = '';
+
+   html += '<table><tbody>';
    for (var i = 0; i < 365; i++) {
-      $('body').append('<tr>');
-      $('body').append('<td>' + pretty_date(date_from_day(2015, i + start_day)) + '</td>');
-      $('body').append('<td>' + data[i].old_testament + '</td>');
-      $('body').append('<td>' + data[i].new_testament + '</td>');
-      $('body').append('<td>' + data[i].psalms_and_proverbs + '</td>');
-      $('body').append('</tr>');
+      var date = pretty_date(date_from_day(2015, i + start_day));
+
+      if (date === pretty_date(new Date())) {
+         html += '<tr id="today">';
+      } else {
+         html += '<tr>';
+      }
+
+      html += '<td>' + date + '</td>';
+      html += '<td>' + data[i].old_testament + '</td>';
+      html += '<td>' + data[i].new_testament + '</td>';
+      html += '<td>' + data[i].psalms_and_proverbs + '</td>';
+      html += '</tr>';
    }
-   $('body').append('</tbody></table>');
+   html += '</tbody></table>';
+   $('body').append(html);
 }
 
 function params() {
@@ -98,42 +108,28 @@ function params() {
    return query_string;
 }
 
-function delete_cookie(name) {
-  document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:01 GMT;';
-}
-
-function get_cookies() {
-   var cookies = {}
-   var cookie_string = document.cookie.split(';');
-   for (var i = 0; i < cookie_string.length; i++) {
-      var pair = cookie_string[i].split('=');
-      cookies[pair[0].replace(/ /g, '')] = pair[1];
-   }
-   return cookies;
-}
-
 function go_to_date() {
-   var date;
-
-   if (get_cookies().start_date) {
-      date = get_cookies().start_date;
-   } else if (params().start) {
-      date = params().start;
-   } else {
-      date = todays_date();
+   if (!params().start) {
+      window.history.pushState(null, null, "?start=" + todays_date());
    }
+}
 
-   window.history.pushState(null, null, "?start=" + date);
+function show_start_date() {
+   var today = pretty_date(new Date());
+   var start_date = us_to_ietf(params().start);
+   var text = '';
+   if (start_date === today) {
+      text = "You are starting today,";
+   } else if (new Date(today) > new Date(start_date)) {
+      text = "You started";
+   } else {
+      text = "You will start";
+   }
+   $('#start_date').text(text + " " + start_date + ".");
 }
 
 $(function() {
-
    go_to_date();
+   show_start_date();
    get_verses();
-
-   $('#start_button').click(function() {
-      var no_expire = '; expires=Fri, 31 Dec 9999 23:59:59 GMT; path=/';
-      document.cookie = 'start_date=' + params().start + no_expire;
-      return false;
-   });
 });
