@@ -3,16 +3,25 @@
 	<title>Daily Bible Plan</title>
 	<link href="/style.css" rel="stylesheet" type="text/css">
 	<link href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.2/themes/flick/jquery-ui.min.css" rel="stylesheet">
-</head>
+	<link href='http://fonts.googleapis.com/css?family=Merriweather:900' rel='stylesheet' type='text/css'>
+	<link href='http://fonts.googleapis.com/css?family=Actor' rel='stylesheet' type='text/css'></head>
 
 <body>
 	<h1>Daily Bible Plan</h1>
-	<p>Bookmark this page for the day you want to start reading. Visit that bookmark to get your personal plan.</p>
-	<p>Start date: <input type="text" id="datepicker"/></p>
 
-	<div id='today_old'></div>
-	<div id='today_psalm'></div>
-	<div id='today_new'></div>
+	<p><strong>Today</strong> read:</p>
+	<div id='todays_verses'>
+		<div id='today_old'></div>
+		<div id='today_psalm'></div>
+		<div id='today_new'></div>
+	</div>
+
+	<p>Want to read the <strong>Bible</strong> in a year? Don't wait for next January 1st!</p>
+	<p><strong>Bookmark this page</strong> for the day you want to start reading. Visit the bookmark to get your personal plan.</p>
+
+	<br/>
+	<p>Start date: <input type="text" id="datepicker"/></p>
+	<br/>
 
 	<p><button id='show_plan'>Show entire plan</button></p>
 	<div id='verses'></div>
