@@ -26,6 +26,25 @@ function date_from_day(year, day){
   return new Date(date.setDate(day)); // add the number of days
 }
 
+function get_todays_verses() {
+   $.getJSON('/verses.json', function(data) {
+      print_todays_verse(data);
+   });
+}
+
+function print_todays_verse(data) {
+   var secondsInOneDay = 1000 * 60 * 60 * 24;
+   var start = new Date(param_date());
+   var today = new Date();
+   var day_number = Math.floor((today - start) / secondsInOneDay);
+   var verses = data[day_number];
+   console.log(verses);
+
+   $('#today_old').text(verses.old_testament);
+   $('#today_psalm').text(verses.psalms_and_proverbs);
+   $('#today_new').text(verses.new_testament);
+}
+
 // Get the verses and print them
 function get_verses() {
    $.getJSON('/verses.json', function(data) {
@@ -50,8 +69,8 @@ function print_verses(data) {
 
       html += '<td>' + date + '</td>';
       html += '<td>' + data[i].old_testament + '</td>';
-      html += '<td>' + data[i].new_testament + '</td>';
       html += '<td>' + data[i].psalms_and_proverbs + '</td>';
+      html += '<td>' + data[i].new_testament + '</td>';
       html += '</tr>';
    }
    html += '</tbody></table>';
@@ -85,7 +104,7 @@ function show_start_date() {
 $(function() {
    go_to_date();
    show_start_date();
-   get_verses();
+   get_todays_verses();
 
    $("#datepicker").datepicker({
       inline: true,
