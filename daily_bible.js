@@ -1,11 +1,5 @@
 
-function todays_date(separator) {
-   var separator = separator || " ";
-   var today = new Date();
-
-   return pretty_date(today, separator);
-}
-
+// Takes date object and separator, returns something like January 1, 2015
 function pretty_date(date, separator) {
    var separator = separator || " ";
 
@@ -16,6 +10,7 @@ function pretty_date(date, separator) {
    return month + separator + day + ',' + separator + year;
 }
 
+// Get the number of the day in the year
 function day_of_year(date) {
    var now = new Date(date);
    var start = new Date(now.getFullYear(), 0, 0);
@@ -25,17 +20,20 @@ function day_of_year(date) {
    return day;
 }
 
+// Get the date on the day-th day of year
 function date_from_day(year, day){
   var date = new Date(year, 0); // initialize a date in `year-01-01`
   return new Date(date.setDate(day)); // add the number of days
 }
 
+// Get the verses and print them
 function get_verses() {
    $.getJSON('/verses.json', function(data) {
       print_verses(data);
    });
 }
 
+// Print a table of all the verses. Highlight today
 function print_verses(data) {
 
    var start_day = day_of_year(param_date());
@@ -60,20 +58,24 @@ function print_verses(data) {
    $('#verses').html(html);
 }
 
+// Get the pretty date from the url hash
 function param_date() {
    return window.location.hash.replace(/_/g, ' ').replace('#', '');
 }
 
+// Set the url hash to a pretty date
 function set_param_date(date) {
    window.location.hash = pretty_date(date, '_');
 }
 
+// Set the date to today if an invalid one is given
 function go_to_date() {
    if (!Date.parse(param_date())) {
       set_param_date(new Date());
    }
 }
 
+// Set the datepicker field start date based on url hash
 function show_start_date() {
    var today = pretty_date(new Date());
    var start_date = param_date();
