@@ -40,12 +40,10 @@ function get_verses() {
 function print_verses(data) {
 
    var start_day = day_of_year(params().start.replace(/_/g, ' '));
+   var html = '<table><tbody>';
 
-   var html = '';
-
-   html += '<table><tbody>';
    for (var i = 0; i < 365; i++) {
-      var date = pretty_date(date_from_day(2015, i + start_day));
+      var date = pretty_date(date_from_day(new Date(params().start.replace(/_/g, ' ')).getFullYear(), i + start_day));
 
       if (date === pretty_date(new Date())) {
          html += '<tr id="today">';
