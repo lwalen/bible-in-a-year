@@ -119,6 +119,7 @@ $(function() {
 
    $('#show_plan').on('click', function() {
       if ($('#verses').text() === "") {
+         $('#verses').text("Loading...")
          get_verses();
          $(this).text("Hide plan");
       } else {
