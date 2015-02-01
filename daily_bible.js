@@ -38,7 +38,6 @@ function print_todays_verse(data) {
    var today = new Date();
    var day_number = Math.floor((today - start) / secondsInOneDay);
    var verses = data[day_number];
-   console.log(verses);
 
    $('#today_old').text(verses.old_testament);
    $('#today_psalm').text(verses.psalms_and_proverbs);
@@ -115,6 +114,16 @@ $(function() {
          date = new Date(date);
          set_param_date(date);
          get_verses();
+      }
+   });
+
+   $('#show_plan').on('click', function() {
+      if ($('#verses').text() === "") {
+         get_verses();
+         $(this).text("Hide plan");
+      } else {
+         $('#verses').text("");
+         $(this).text("Show entire plan");
       }
    });
 });
