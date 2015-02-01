@@ -1,30 +1,20 @@
 months = ['January', 'February', 'March', 'April', 'May', 'June',
    'July', 'August', 'September', 'October', 'November', 'December'];
 
-function todays_date() {
+function todays_date(separator) {
+   var separator = separator || " ";
    var today = new Date();
-   var dd = today.getDate();
-   var mm = today.getMonth() + 1; // January is 0!
-   var yyyy = today.getFullYear();
-
-   if (dd < 10) {
-      dd = '0' + dd
-   }
-
-   if (mm < 10) {
-      mm = '0' + mm
-   }
-
-   today = mm + '-' + dd + '-' + yyyy;
-   return today;
+   return pretty_date(today, separator);
 }
 
-function pretty_date(date) {
+function pretty_date(date, separator) {
+   var separator = separator || " ";
+
    var dd = date.getDate();
    var mm = date.getMonth();
    var yyyy = date.getFullYear();
 
-   return months[mm] + ' ' + dd + ', ' + yyyy;
+   return months[mm] + separator + dd + ',' + separator + yyyy;
 }
 
 function day_of_year(date) {
@@ -41,12 +31,6 @@ function date_from_day(year, day){
   return new Date(date.setDate(day)); // add the number of days
 }
 
-function us_to_ietf(date) {
-   var parts = date.split('-');
-
-   return months[parseInt(parts[0]) - 1] + ' ' + parts[1] + ', ' + parts[2];
-}
-
 function get_verses() {
    $.getJSON('/verses.json', function(data) {
       print_verses(data);
@@ -55,7 +39,7 @@ function get_verses() {
 
 function print_verses(data) {
 
-   var start_day = day_of_year(us_to_ietf(params().start));
+   var start_day = day_of_year(params().start.replace(/_/g, ' '));
 
    var html = '';
 
@@ -76,7 +60,7 @@ function print_verses(data) {
       html += '</tr>';
    }
    html += '</tbody></table>';
-   $('body').append(html);
+   $('#verses').html(html);
 }
 
 function params() {
@@ -109,14 +93,14 @@ function params() {
 }
 
 function go_to_date() {
-   if (!params().start) {
+   if (!params().start || !Date.parse(params().start.replace(/_/g, ' '))) {
       window.history.pushState(null, null, "?start=" + todays_date());
    }
 }
 
 function show_start_date() {
    var today = pretty_date(new Date());
-   var start_date = us_to_ietf(params().start);
+   var start_date = params().start.replace(/_/g, ' ');
    var text = '';
    if (start_date === today) {
       text = "You are starting today,";
@@ -125,11 +109,37 @@ function show_start_date() {
    } else {
       text = "You will start";
    }
-   $('#start_date').text(text + " " + start_date + ".");
+   $('#datepicker').val(start_date);
 }
+
+var refTagger = {
+   settings: {
+      bibleVersion: "ESV",
+      socialSharing: [],
+      tagChapters: true
+   }
+};
 
 $(function() {
    go_to_date();
    show_start_date();
    get_verses();
+
+   $("#datepicker").datepicker({
+      inline: true,
+      changeMonth: true,
+      changeYear: true,
+      dateFormat: "MM d, yy",
+      onClose: function() {
+         date = new Date($(this)[0].value);
+         window.history.pushState(null, null, "?start=" + pretty_date(date, '_'));
+         get_verses();
+      }
+   });
+
+   (function(d, t) {
+      var g = d.createElement(t), s = d.getElementsByTagName(t)[0];
+      g.src = "//api.reftagger.com/v2/RefTagger.js";
+      s.parentNode.insertBefore(g, s);
+   }(document, "script"));
 });
