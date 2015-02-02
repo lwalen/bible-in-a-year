@@ -1,4 +1,21 @@
+body {
+	font-family: 'Actor', sans-serif;
+}
+
+h1 {
+	font-family: 'Merriweather', serif;
+}
+
+#todays_verses {
+	font-size: 24px;
+	margin: 30px 0 40px 50px;
+}
+
 #today {
 	background-color: #ccc;
+	font-weight: bold;
+}
+
+#start_date_text {
 	font-weight: bold;
 }

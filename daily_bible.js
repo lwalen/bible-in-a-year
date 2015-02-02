@@ -1,67 +1,85 @@
-months = ['January', 'February', 'March', 'April', 'May', 'June',
-   'July', 'August', 'September', 'October', 'November', 'December'];
+var monthNames = [ "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December" ];
 
-function todays_date() {
-   var today = new Date();
-   var dd = today.getDate();
-   var mm = today.getMonth() + 1; // January is 0!
-   var yyyy = today.getFullYear();
+// Takes date object and separator, returns something like January 1, 2015
+function pretty_date(date, separator) {
+   var separator = separator || " ";
 
-   if (dd < 10) {
-      dd = '0' + dd
-   }
+   var day = date.getDate();
+   var month = monthNames[date.getMonth()];
+   var year = date.getFullYear();
 
-   if (mm < 10) {
-      mm = '0' + mm
-   }
-
-   today = mm + '-' + dd + '-' + yyyy;
-   return today;
+   return month + separator + day + ',' + separator + year;
 }
 
-function pretty_date(date) {
-   var dd = date.getDate();
-   var mm = date.getMonth();
-   var yyyy = date.getFullYear();
-
-   return months[mm] + ' ' + dd + ', ' + yyyy;
-}
-
+// Get the number of the day in the year
 function day_of_year(date) {
    var now = new Date(date);
    var start = new Date(now.getFullYear(), 0, 0);
    var diff = now - start;
-   var oneDay = 1000 * 60 * 60 * 24;
-   var day = Math.floor(diff / oneDay);
+   var secondsInOneDay = 1000 * 60 * 60 * 24;
+   var day = Math.floor(diff / secondsInOneDay);
    return day;
 }
 
+// Get the date on the day-th day of year
 function date_from_day(year, day){
   var date = new Date(year, 0); // initialize a date in `year-01-01`
   return new Date(date.setDate(day)); // add the number of days
 }
 
-function us_to_ietf(date) {
-   var parts = date.split('-');
-
-   return months[parseInt(parts[0]) - 1] + ' ' + parts[1] + ', ' + parts[2];
+function get_todays_verses() {
+   $.getJSON('/verses.json', function(data) {
+      print_todays_verses(data);
+   });
 }
 
+function print_todays_verses(data) {
+   var secondsInOneDay = 1000 * 60 * 60 * 24;
+   var start = new Date(param_date());
+   var today = new Date();
+   var day_number = Math.floor((today - start) / secondsInOneDay);
+   var verses = data[day_number];
+   console.log(day_number);
+   console.log(verses);
+
+   if (day_number < 0) {
+      clear_verses();
+      $('#todays_verses_error').text("Nothing yet! Are you sure you don't want to start sooner?");
+   } else if (day_number > 365) {
+      clear_verses();
+      $('#todays_verses_error').text("Isn't that a long time ago? Why don't you start again?");
+   } else {
+      clear_verses_error();
+      $('#today_old').text(verses.old_testament);
+      $('#today_psalm').text(verses.psalms_and_proverbs);
+      $('#today_new').text(verses.new_testament);
+   }
+}
+
+function clear_verses() {
+   $('#today_old, #today_psalm, #today_new').text("");
+}
+
+function clear_verses_error() {
+   $('#todays_verses_error').text("");
+}
+
+// Get the verses and print them
 function get_verses() {
    $.getJSON('/verses.json', function(data) {
       print_verses(data);
    });
 }
 
+// Print a table of all the verses. Highlight today
 function print_verses(data) {
 
-   var start_day = day_of_year(us_to_ietf(params().start));
+   var start_day = day_of_year(param_date());
+   var html = '<table><tbody>';
 
-   var html = '';
-
-   html += '<table><tbody>';
    for (var i = 0; i < 365; i++) {
-      var date = pretty_date(date_from_day(2015, i + start_day));
+      var date = pretty_date(date_from_day(new Date(param_date()).getFullYear(), i + start_day));
 
       if (date === pretty_date(new Date())) {
          html += '<tr id="today">';
@@ -71,65 +89,72 @@ function print_verses(data) {
 
       html += '<td>' + date + '</td>';
       html += '<td>' + data[i].old_testament + '</td>';
-      html += '<td>' + data[i].new_testament + '</td>';
       html += '<td>' + data[i].psalms_and_proverbs + '</td>';
+      html += '<td>' + data[i].new_testament + '</td>';
       html += '</tr>';
    }
    html += '</tbody></table>';
-   $('body').append(html);
+   $('#verses').html(html);
 }
 
-function params() {
-   var query_string = {};
-   var query = window.location.search.substring(1);
-   var vars = query.split("&");
-
-   for (var i = 0; i < vars.length; i++) {
-      var pair = vars[i].split("=");
-
-      // Chrome bug appends slash to end of parameter
-      if (pair[1] && pair[1].substr(pair[1].length - 1) === "/") {
-         pair[1] = pair[1].substr(0, pair[1].length - 1);
-      }
-
-      // If first entry with this name
-      if (typeof query_string[pair[0]] === "undefined") {
-         query_string[pair[0]] = pair[1];
-      // If second entry with this name
-      } else if (typeof query_string[pair[0]] === "string") {
-         var arr = [ query_string[pair[0]], pair[1] ];
-         query_string[pair[0]] = arr;
-      // If third or later entry with this name
-      } else {
-         query_string[pair[0]].push(pair[1]);
-      }
-   }
-
-   return query_string;
+// Get the pretty date from the url hash
+function param_date() {
+   return window.location.hash.replace(/_/g, ' ').replace('#', '');
 }
 
+// Set the url hash to a pretty date
+function set_param_date(date) {
+   window.location.hash = pretty_date(date, '_');
+}
+
+// Set the date to today if an invalid one is given
 function go_to_date() {
-   if (!params().start) {
-      window.history.pushState(null, null, "?start=" + todays_date());
+   if (!Date.parse(param_date())) {
+      set_param_date(new Date());
    }
 }
 
+// Set the date text
 function show_start_date() {
-   var today = pretty_date(new Date());
-   var start_date = us_to_ietf(params().start);
-   var text = '';
-   if (start_date === today) {
-      text = "You are starting today,";
-   } else if (new Date(today) > new Date(start_date)) {
-      text = "You started";
-   } else {
-      text = "You will start";
-   }
-   $('#start_date').text(text + " " + start_date + ".");
+   $('#start_date_text').text(param_date());
+}
+
+function initialize_datepicker() {
+   var today = new Date();
+   var last_year = today.getFullYear() - 1;
+   var next_year = today.getFullYear() + 1;
+
+   $("#datepicker").datepicker({
+      inline: true,
+      changeMonth: true,
+      changeYear: true,
+      dateFormat: "MM d, yy",
+      defaultDate: new Date(param_date()),
+      yearRange: last_year + ":" + next_year,
+      onSelect: function(date) {
+         console.log(date);
+         date = new Date(date);
+         set_param_date(date);
+         show_start_date();
+         get_todays_verses();
+      }
+   });
 }
 
 $(function() {
    go_to_date();
+   get_todays_verses();
    show_start_date();
-   get_verses();
+   initialize_datepicker();
+
+   $('#show_plan').on('click', function() {
+      if ($('#verses').text() === "") {
+         $('#verses').text("Loading...")
+         get_verses();
+         $(this).text("Hide plan");
+      } else {
+         $('#verses').text("");
+         $(this).text("Show entire plan");
+      }
+   });
 });
