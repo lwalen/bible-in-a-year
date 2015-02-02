@@ -30,27 +30,39 @@ function date_from_day(year, day){
 
 function get_todays_verses() {
    $.getJSON('/verses.json', function(data) {
-      print_todays_verse(data);
+      print_todays_verses(data);
    });
 }
 
-function print_todays_verse(data) {
+function print_todays_verses(data) {
    var secondsInOneDay = 1000 * 60 * 60 * 24;
    var start = new Date(param_date());
    var today = new Date();
    var day_number = Math.floor((today - start) / secondsInOneDay);
    var verses = data[day_number];
    console.log(day_number);
+   console.log(verses);
 
    if (day_number < 0) {
-      $('#todays_verses').text("Nothing yet! Are you sure you don't want to start sooner?");
+      clear_verses();
+      $('#todays_verses_error').text("Nothing yet! Are you sure you don't want to start sooner?");
    } else if (day_number > 365) {
-      $('#todays_verses').text("Isn't that a long time ago? Why don't you start again?");
+      clear_verses();
+      $('#todays_verses_error').text("Isn't that a long time ago? Why don't you start again?");
    } else {
+      clear_verses_error();
       $('#today_old').text(verses.old_testament);
       $('#today_psalm').text(verses.psalms_and_proverbs);
       $('#today_new').text(verses.new_testament);
    }
+}
+
+function clear_verses() {
+   $('#today_old, #today_psalm, #today_new').text("");
+}
+
+function clear_verses_error() {
+   $('#todays_verses_error').text("");
 }
 
 // Get the verses and print them
@@ -102,29 +114,38 @@ function go_to_date() {
    }
 }
 
-// Set the datepicker field start date based on url hash
+// Set the date text
 function show_start_date() {
-   var today = pretty_date(new Date());
-   var start_date = param_date();
-   $('#datepicker').val(start_date);
+   $('#start_date_text').text(param_date());
 }
 
-$(function() {
-   go_to_date();
-   show_start_date();
-   get_todays_verses();
+function initialize_datepicker() {
+   var today = new Date();
+   var last_year = today.getFullYear() - 1;
+   var next_year = today.getFullYear() + 1;
 
    $("#datepicker").datepicker({
       inline: true,
       changeMonth: true,
       changeYear: true,
       dateFormat: "MM d, yy",
-      onClose: function(date) {
+      defaultDate: new Date(param_date()),
+      yearRange: last_year + ":" + next_year,
+      onSelect: function(date) {
+         console.log(date);
          date = new Date(date);
          set_param_date(date);
+         show_start_date();
          get_todays_verses();
       }
    });
+}
+
+$(function() {
+   go_to_date();
+   get_todays_verses();
+   show_start_date();
+   initialize_datepicker();
 
    $('#show_plan').on('click', function() {
       if ($('#verses').text() === "") {

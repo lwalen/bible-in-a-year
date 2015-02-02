@@ -16,6 +16,6 @@ h1 {
 	font-weight: bold;
 }
 
-.ui-datepicker {
-	font-size: 70% !important;
+#start_date_text {
+	font-weight: bold;
 }
