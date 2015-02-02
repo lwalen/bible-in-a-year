@@ -1,10 +1,12 @@
+var monthNames = [ "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December" ];
 
 // Takes date object and separator, returns something like January 1, 2015
 function pretty_date(date, separator) {
    var separator = separator || " ";
 
    var day = date.getDate();
-   var month = date.toLocaleString('en-us', { month: 'long' });
+   var month = monthNames[date.getMonth()];
    var year = date.getFullYear();
 
    return month + separator + day + ',' + separator + year;
@@ -38,10 +40,17 @@ function print_todays_verse(data) {
    var today = new Date();
    var day_number = Math.floor((today - start) / secondsInOneDay);
    var verses = data[day_number];
+   console.log(day_number);
 
-   $('#today_old').text(verses.old_testament);
-   $('#today_psalm').text(verses.psalms_and_proverbs);
-   $('#today_new').text(verses.new_testament);
+   if (day_number < 0) {
+      $('#todays_verses').text("Nothing yet! Are you sure you don't want to start sooner?");
+   } else if (day_number > 365) {
+      $('#todays_verses').text("Isn't that a long time ago? Why don't you start again?");
+   } else {
+      $('#today_old').text(verses.old_testament);
+      $('#today_psalm').text(verses.psalms_and_proverbs);
+      $('#today_new').text(verses.new_testament);
+   }
 }
 
 // Get the verses and print them
@@ -113,7 +122,7 @@ $(function() {
       onClose: function(date) {
          date = new Date(date);
          set_param_date(date);
-         get_verses();
+         get_todays_verses();
       }
    });
 
