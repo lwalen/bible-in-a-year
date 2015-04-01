@@ -1,6 +1,6 @@
-# Daily Bible Plan
+# Bible in a Year
 
-A simple JavaScript tool for reading the Bible in a year, starting on any day. 
+A simple JavaScript tool for reading the Bible in a year, starting on any day.
 Reads verses from `/verses.json` and calculates offset from start date.
 
 ### Possible Improvements
